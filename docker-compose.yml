@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: production
+      DATABASE_URL: sqlite:///./data/app.db
+      BACKEND_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      NODE_ENV: production
+      BACKEND_INTERNAL_URL: http://backend:8000
+      NEXT_PUBLIC_API_BASE_URL: /backend-api
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  backend_data:

@@ -2,17 +2,33 @@
 
 [中文](#中文) | [English](#english)
 
+Turn scattered articles into a guided reading workflow with curriculum staging, daily reading, weekly planning, progress tracking, and optional OpenAI-compatible provider support.
+
+## Screenshots
+
+| Dashboard | Sources |
+| --- | --- |
+| ![Dashboard](./.assets/wechat_2026-03-27_174017_137.png) | ![Sources](./.assets/wechat_2026-03-27_174107_066.png) |
+
+| Curriculum | Today |
+| --- | --- |
+| ![Curriculum](./.assets/wechat_2026-03-27_174147_747.png) | ![Today](./.assets/wechat_2026-03-27_174156_728.png) |
+
+| Weekly |
+| --- |
+| ![Weekly](./.assets/wechat_2026-03-27_174219_049.png) |
+
 ## 中文
 
 ### 项目简介
 
 `Guided Reading System` 是一个面向自部署场景的单用户阅读推进系统。
 
-它的目标不是做“猜你喜欢”的推荐器，而是把一批零散文章组织成可持续推进的阅读课程，并支持：
+它不是“猜你喜欢”的推荐器，而是把一批零散文章组织成可持续推进的阅读课程，并支持：
 
 - RSS 来源管理
 - 手动来源与文本批量导入
-- 文章整理与课程编排
+- 课程编排与阅读推进
 - 今日阅读与每周计划
 - 阅读记录与进度统计
 - 接入任意 OpenAI-compatible provider 做文章分析和周计划辅助
@@ -27,17 +43,17 @@
 - 文章导入
   - RSS 导入
   - 手动单篇录入
-  - 文章列表文本导入
+  - 文本批量导入
     - 支持 `.txt / .md / .csv`
     - 支持直接粘贴文本
     - 先预览再导入
-    - 可关联已有来源或新建手动来源
+    - 可绑定已有来源或新建手动来源
 - 课程与推进
   - `foundation / core / frontier / update`
   - `planned / skimmed / deep_read / reviewed / mastered`
   - `/curriculum` 编辑课程字段
   - `/today` 展示主读 + 补充
-  - `/weekly` 生成并展示本周主线、补充线和复盘
+  - `/weekly` 展示本周主线、补充线、计划与复盘
   - `/log` 记录阅读日志
   - `/progress` 展示聚合进度
 - LLM 集成

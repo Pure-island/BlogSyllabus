@@ -1,10 +1,10 @@
 # AGENTS.md
 
 ## Project
-Build a guided reading system for AI/AIGC research blogs.
+Build a generic guided reading system for RSS-driven reading workflows.
 
 ## Goal
-Help the user systematically finish a curated set of blogs and keep up with updates.
+Help users turn a set of blogs or feeds into a finishable curriculum, keep progress moving, and review what they learned.
 This is not a preference-based recommender.
 This is a curriculum + progress + review system.
 
@@ -23,17 +23,17 @@ This is a curriculum + progress + review system.
 - ArticleRelation
 - ReadingLog
 - WeeklyReview
+- ImportJob
+- ImportJobItem
 
 ## MVP rules
 - Keep v1 single-user only
 - No auth in v1
 - RSS first, scraping later
 - Keep UI clean and minimal
-- Use deterministic scheduling rules
-- Use OpenAI API only for:
-  - article analysis
-  - weekly plan generation
-  - review question generation
+- Use deterministic scheduling rules for Today
+- Keep Weekly generation optional and provider-backed
+- Support OpenAI-compatible providers via configurable `base_url + api_key + model`
 
 ## Reading stages
 - foundation
@@ -52,6 +52,6 @@ This is a curriculum + progress + review system.
 - Prefer small, readable components
 - Add loading, empty, and error states
 - Keep database schema explicit
-- Add seed data for demo blog sources
-- Run lint after major changes
+- Add seed data for demo sources
+- Run lint/tests after major changes
 - Update README when setup changes

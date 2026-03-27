@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { TodayPage } from "@/components/today-page";
 
 export default function TodayRoute() {
-  return <PlaceholderPage title="Today" />;
+  return <TodayPage />;
 }

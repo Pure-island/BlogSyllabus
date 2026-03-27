@@ -3,11 +3,11 @@ from sqlmodel import Session
 
 from app.db import get_session
 from app.schemas import SourceCheckResponse, SourceCreate, SourceFetchResponse, SourceRead, SourceUpdate
+from app.services.import_service import fetch_source_sync
 from app.services.source_service import (
     check_source_feed,
     create_source,
     delete_source,
-    fetch_articles_for_source,
     get_source_or_404,
     list_sources,
     update_source,
@@ -65,5 +65,5 @@ def test_source_endpoint(source_id: int, session: Session = Depends(get_session)
 @router.post("/{source_id}/fetch", response_model=SourceFetchResponse)
 def fetch_source_endpoint(source_id: int, session: Session = Depends(get_session)) -> SourceFetchResponse:
     source = get_source_or_404(session, source_id)
-    result = fetch_articles_for_source(session, source)
+    result = fetch_source_sync(session, source)
     return SourceFetchResponse(message="Feed fetched successfully.", **result)

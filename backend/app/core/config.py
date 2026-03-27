@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Research Blog Reading Tracker API"
+    app_name: str = "Guided Reading System API"
     app_env: str = "development"
     api_prefix: str = "/api"
     database_url: str = "sqlite:///./data/app.db"

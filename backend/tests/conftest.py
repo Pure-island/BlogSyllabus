@@ -1,9 +1,12 @@
 from collections.abc import Generator
+import os
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
+
+os.environ["APP_ENV"] = "test"
 
 from app.db import get_session
 from app.main import app

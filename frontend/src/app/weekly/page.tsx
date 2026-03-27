@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { WeeklyPage } from "@/components/weekly-page";
 
 export default function WeeklyRoute() {
-  return <PlaceholderPage title="Weekly Review" />;
+  return <WeeklyPage />;
 }

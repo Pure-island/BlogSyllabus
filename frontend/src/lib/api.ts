@@ -1,9 +1,23 @@
 import type {
   Article,
+  ArticleImportBatchPayload,
+  ArticleImportBatchResponse,
+  ArticleImportPreviewPayload,
+  ArticleImportPreviewResponse,
   ArticlePayload,
+  ArticleUpdatePayload,
+  BatchAnalyzePayload,
+  CurriculumResponse,
+  ImportJob,
+  MessageResponse,
+  ProgressResponse,
+  ReadingLog,
+  ReadingLogPayload,
   SettingsPayload,
   Source,
   SourcePayload,
+  TodayResponse,
+  WeeklyReview,
 } from "@/lib/types";
 
 const API_BASE =
@@ -20,6 +34,11 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+function buildPath(path: string, params?: URLSearchParams) {
+  const query = params?.toString();
+  return `${API_BASE}${path}${query ? `?${query}` : ""}`;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -71,26 +90,87 @@ export const api = {
       },
     ),
   fetchSource: (id: number) =>
-    request<{
-      message: string;
-      inserted_count: number;
-      deduplicated_count: number;
-      total_entries: number;
-    }>(`/sources/${id}/fetch`, {
+    request<{ message: string; inserted_count: number; deduplicated_count: number; total_entries: number }>(
+      `/sources/${id}/fetch`,
+      {
+        method: "POST",
+      },
+    ),
+  createBulkImportJob: () =>
+    request<MessageResponse>("/imports/sources/fetch-active", {
+      method: "POST",
+    }),
+  createSourceImportJob: (id: number) =>
+    request<MessageResponse>(`/imports/sources/${id}/fetch`, {
+      method: "POST",
+    }),
+  listImportJobs: () => request<ImportJob[]>("/imports/jobs"),
+  getImportJob: (id: number) => request<ImportJob>(`/imports/jobs/${id}`),
+  retryImportJob: (id: number) =>
+    request<MessageResponse>(`/imports/jobs/${id}/retry`, {
       method: "POST",
     }),
   listInbox: (params?: URLSearchParams) =>
-    request<Article[]>(`/inbox${params?.toString() ? `?${params.toString()}` : ""}`),
+    request<Article[]>(buildPath("/inbox", params).replace(API_BASE, "")),
   createArticle: (payload: ArticlePayload) =>
     request<Article>("/articles", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  listArticles: () => request<Article[]>("/articles"),
+  previewArticleImport: (payload: ArticleImportPreviewPayload) =>
+    request<ArticleImportPreviewResponse>("/articles/import-preview", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  importArticleBatch: (payload: ArticleImportBatchPayload) =>
+    request<ArticleImportBatchResponse>("/articles/import-batch", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  listArticles: (params?: URLSearchParams) =>
+    request<Article[]>(buildPath("/articles", params).replace(API_BASE, "")),
+  updateArticle: (id: number, payload: ArticleUpdatePayload) =>
+    request<Article>(`/articles/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  analyzeArticle: (id: number) =>
+    request<Article>(`/articles/${id}/analyze`, {
+      method: "POST",
+    }),
+  analyzeBatch: (payload: BatchAnalyzePayload = {}) =>
+    request<MessageResponse & { job_id: number }>("/articles/analyze-batch", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  getCurriculum: () => request<CurriculumResponse>("/curriculum"),
+  getToday: () => request<TodayResponse>("/today"),
+  generateToday: () =>
+    request<TodayResponse>("/today/generate", {
+      method: "POST",
+    }),
+  getProgress: () => request<ProgressResponse>("/progress"),
+  listReadingLogs: () => request<ReadingLog[]>("/reading-logs"),
+  createReadingLog: (payload: ReadingLogPayload) =>
+    request<ReadingLog>("/reading-logs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  getCurrentWeekly: () => request<WeeklyReview | null>("/weekly/current"),
+  generateWeekly: () =>
+    request<WeeklyReview>("/weekly/generate", {
+      method: "POST",
+    }),
+  getWeeklyHistory: () => request<WeeklyReview[]>("/weekly/history"),
   getSettings: () => request<SettingsPayload>("/settings"),
   updateSettings: (payload: SettingsPayload) =>
     request<SettingsPayload>("/settings", {
       method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  testSettingsConnection: (payload: SettingsPayload) =>
+    request<MessageResponse>("/settings/test", {
+      method: "POST",
       body: JSON.stringify(payload),
     }),
 };

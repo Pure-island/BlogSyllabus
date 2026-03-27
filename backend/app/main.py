@@ -6,10 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes.articles import router as articles_router
+from app.api.routes.imports import router as imports_router
 from app.api.routes.settings import router as settings_router
 from app.api.routes.sources import router as sources_router
+from app.api.routes.weekly import router as weekly_router
 from app.core.config import get_settings
 from app.db import create_db_and_tables
+from app.services.import_service import start_background_processor, stop_background_processor
 
 settings = get_settings()
 
@@ -17,7 +20,9 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     create_db_and_tables()
+    start_background_processor()
     yield
+    stop_background_processor()
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
@@ -48,9 +53,11 @@ async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONRespons
 
 @app.get("/")
 def root() -> dict[str, str]:
-    return {"message": "Research Blog Reading Tracker API is running."}
+    return {"message": "Guided Reading System API is running."}
 
 
 app.include_router(sources_router, prefix=settings.api_prefix)
 app.include_router(articles_router, prefix=settings.api_prefix)
+app.include_router(imports_router, prefix=settings.api_prefix)
+app.include_router(weekly_router, prefix=settings.api_prefix)
 app.include_router(settings_router, prefix=settings.api_prefix)

@@ -12,11 +12,11 @@ export function PlaceholderPage({ title }: { title: string }) {
       <PageHeader
         eyebrow="Scaffold"
         title={title}
-        description={dictionary.placeholderDescription}
+        description={dictionary.overviewDescription}
       />
       <EmptyState
-        title={dictionary.placeholderTitle}
-        description={dictionary.placeholderDescription}
+        title={dictionary.empty}
+        description={dictionary.overviewDescription}
       />
     </section>
   );

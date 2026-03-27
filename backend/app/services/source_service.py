@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.models import Article, FetchStatus, Source
+from app.models import Article, FetchStatus, Source, SourceType
 from app.schemas import SourceCreate, SourceUpdate
 from app.services.rss import FeedError, fetch_feed_content, normalize_entries, validate_feed
 
@@ -29,7 +29,11 @@ def get_source_or_404(session: Session, source_id: int) -> Source:
     return source
 
 
-def ensure_unique_rss_url(session: Session, rss_url: str, exclude_id: Optional[int] = None) -> None:
+def ensure_unique_rss_url(
+    session: Session, rss_url: Optional[str], exclude_id: Optional[int] = None
+) -> None:
+    if not rss_url:
+        return
     statement = select(Source).where(Source.rss_url == rss_url)
     existing = session.exec(statement).first()
     if existing and existing.id != exclude_id:
@@ -39,9 +43,26 @@ def ensure_unique_rss_url(session: Session, rss_url: str, exclude_id: Optional[i
         )
 
 
+def _resolved_source_type(requested_type: SourceType | None, rss_url: Optional[str]) -> SourceType:
+    return SourceType.RSS if rss_url else requested_type or SourceType.MANUAL
+
+
+def _validate_source_fields(source_type: SourceType, rss_url: Optional[str]) -> None:
+    if source_type == SourceType.RSS and not rss_url:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="RSS sources require an RSS URL.",
+        )
+
+
 def create_source(session: Session, payload: SourceCreate) -> Source:
-    ensure_unique_rss_url(session, payload.rss_url)
-    source = Source.model_validate(payload)
+    rss_url = payload.rss_url.strip() if payload.rss_url else None
+    source_type = _resolved_source_type(payload.source_type, rss_url)
+    _validate_source_fields(source_type, rss_url)
+    ensure_unique_rss_url(session, rss_url)
+    source = Source.model_validate(
+        payload.model_dump() | {"rss_url": rss_url, "source_type": source_type}
+    )
     session.add(source)
     session.commit()
     session.refresh(source)
@@ -50,8 +71,17 @@ def create_source(session: Session, payload: SourceCreate) -> Source:
 
 def update_source(session: Session, source: Source, payload: SourceUpdate) -> Source:
     updates = payload.model_dump(exclude_unset=True)
+    rss_url = source.rss_url
     if "rss_url" in updates:
-        ensure_unique_rss_url(session, updates["rss_url"], exclude_id=source.id)
+        rss_url = updates["rss_url"].strip() if updates["rss_url"] else None
+        ensure_unique_rss_url(session, rss_url, exclude_id=source.id)
+        updates["rss_url"] = rss_url
+    source_type = _resolved_source_type(
+        updates.get("source_type", source.source_type),
+        rss_url,
+    )
+    _validate_source_fields(source_type, rss_url)
+    updates["source_type"] = source_type
 
     for key, value in updates.items():
         setattr(source, key, value)
@@ -77,6 +107,11 @@ def delete_source(session: Session, source: Source) -> None:
 
 
 def check_source_feed(source: Source) -> dict[str, str | int | None]:
+    if source.source_type != SourceType.RSS or not source.rss_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="RSS is not configured for this source.",
+        )
     try:
         metadata = validate_feed(source.rss_url)
         return {
@@ -93,6 +128,11 @@ def check_source_feed(source: Source) -> dict[str, str | int | None]:
 
 
 def fetch_articles_for_source(session: Session, source: Source) -> dict[str, int]:
+    if source.source_type != SourceType.RSS or not source.rss_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="RSS is not configured for this source.",
+        )
     try:
         raw_feed = fetch_feed_content(source.rss_url)
         normalized_entries = normalize_entries(source, raw_feed)

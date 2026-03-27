@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { ReadingLogPage } from "@/components/reading-log-page";
 
 export default function LogRoute() {
-  return <PlaceholderPage title="Reading Log" />;
+  return <ReadingLogPage />;
 }

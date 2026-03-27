@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { ProgressPage } from "@/components/progress-page";
 
 export default function ProgressRoute() {
-  return <PlaceholderPage title="Progress" />;
+  return <ProgressPage />;
 }
